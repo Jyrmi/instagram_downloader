@@ -46,19 +46,21 @@ items = json.loads(embedded_json.encode("iso-8859-1", "ignore"))
 
 for page in items['entry_data']['ProfilePage']:
 	for node in page['user']['media']['nodes']:
+		print node['id']
 		if node['is_video']: # Open the link to the video
-			print node['id']
+			dl_path = output_directory + '/' + node['id'] + '.mp4'
+			if os.path.exists(dl_path): continue
 			video_source = requests.get(page_prefix + node['code'])
 			video_soup = bs(video_source.content, 'lxml')
 			meta_tag = video_soup.find('meta',
 				{'property': 'og:video:secure_url'})
 			video_link = meta_tag['content']
 			response = urlopen(video_link)
-			with open('/'.join([output_directory, node['id']]) + '.mp4', 'wb') as out:
+			with open(dl_path, 'wb') as out:
 				out.write(response.read())
 		else: # Is an image
-			print node['id']
+			dl_path = output_directory + '/' + node['id'] + '.jpg'
+			if os.path.exists(dl_path): continue
 			response = urlopen(node['display_src'])
-			with open('/'.join([output_directory, node['id']])
-				+ '.jpg', 'wb') as out:
+			with open(dl_path, 'wb') as out:
 				out.write(response.read())
