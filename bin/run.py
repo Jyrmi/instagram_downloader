@@ -60,7 +60,7 @@ if not output_directory:
 #	consistently some extra stuff included in the middle of the original image
 #	url to reference the smaller versions, like s640x640/sh0.08/ or the like.
 #	We can just sub that stuff out and end up with the url to the og image.
-resize = re.compile(r's\d+x\d+/(sh\d+\.\d+/)?')
+resize = re.compile(r'[^/]+\d+x\d+/(sh\d+\.\d+/)?')
 
 # - file_url: gets the url of the media item. Just looking for something that
 #	starts with http and ends with jpg or mp4. Usually this link is embedded
@@ -109,13 +109,13 @@ while profile_source:
 				count += 1
 
 				# DEBUG
-				print dl_path
+				print '('+str(count)+')\t' + dl_path
 
 			continue # There's also an image along with every video just
 			# showing a still frame of the video. We don't need this, but the
 			# next block of code would catch it, so continue past it.
 
-		# If we've reached this point, no video link was found and an image is
+		# If we've reached this point, no video link was found, so an image is
 		# guaranteed.
 
 		# Image case
@@ -141,7 +141,7 @@ while profile_source:
 				count += 1
 
 				# DEBUG
-				print dl_path
+				print '('+str(count)+')\t' + dl_path
 
 		if count >= max_dls: break
 	if count >= max_dls: break
