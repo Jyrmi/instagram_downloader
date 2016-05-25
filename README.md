@@ -1,22 +1,26 @@
 Instagram Downloader - downloads all images/video from an Instagram profile.
 Provide the instagram username or profile url as an argument.
 
+
 Example usage:
 
+
 python bin/run.py pythonpaige
+
 or
+
 python bin/run.py https://www.instagram.com/pythonpaige/
+
 
 
 You may optionally specify the directory to download to:
 
+
 python bin/run.py --dest pics pythonpaige
+
 or
+
 python bin/run.py --dest ~/Desktop/instagram_images pythonpaige
-
-You may also optionally specify the number of items (images/video) to download:
-
-python bin/run.py --max 20 pythonpaige
 
 
 The tool is now scraping from websta.me instead of instagram.com due to
