@@ -13,7 +13,6 @@ os.nice(20)				# Make this process lowest priority
 # Macros of sorts
 workers = 30			# Size of the process pool used to download files
 max_queue = 500		# The maximum number of links to process at once.
-max_dls = 999999		# Program terminates after downloading this many items
 
 # url and path related stuff
 output_directory = ''	# Will be initialized with the optional argument or a
@@ -44,7 +43,7 @@ def fetch_media(link):
 
 
 # --- Argument Parsing ---
-opts, args = getopt(sys.argv[1:], '', ['dest=', 'max='])
+opts, args = getopt(sys.argv[1:], '', ['dest='])
 
 # Expecting only one argument that isn't an option, which is the Instagram
 # username or profile url. We only want the username for our purposes so strip
@@ -67,8 +66,6 @@ for option, option_argument in opts:
 		output_directory = option_argument
 		if not os.path.exists(output_directory):
 			os.makedirs(output_directory)
-	if option == '--max':
-		max_dls = int(option_argument)
 
 # If the output directory doesn't exist, create it.
 if not output_directory:
@@ -174,11 +171,3 @@ while profile_source:
 	if len(links) >= max_queue or not profile_source:
 		process_pool.map(fetch_media, links)
 		links = []
-
-
-		# process_pool.map(lambda link:
-		# 	open(output_directory + '/' +
-		# 		file_name.search(link).group(0),
-		# 		'wb').write(urlopen(link).read()), links)
-
-		# Sad lambda function attempt for map ^

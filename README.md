@@ -13,6 +13,7 @@ python bin/run.py https://www.instagram.com/pythonpaige/
 
 
 
+
 You may optionally specify the directory to download to:
 
 
