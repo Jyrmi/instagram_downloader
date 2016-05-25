@@ -3,13 +3,23 @@ Provide the instagram username or profile url as an argument.
 
 Example usage:
 
-python bin/run.py yesaccasey
+python bin/run.py pythonpaige
 or
-python bin/run.py https://www.instagram.com/yesaccasey/
+python bin/run.py https://www.instagram.com/pythonpaige/
 
 
 You may optionally specify the directory to download to:
 
-python bin/run.py --dest pics yesaccasey
+python bin/run.py --dest pics pythonpaige
 or
-python bin/run.py --dest ~/Desktop/instagram_images yesaccasey
+python bin/run.py --dest ~/Desktop/instagram_images pythonpaige
+
+You may also optionally specify the number of items (images/video) to download:
+
+python bin/run.py --max 20 pythonpaige
+
+
+The tool is now scraping from websta.me instead of instagram.com due to
+extracting media from instagram's main website not being straightforward.
+The downloaded items will still be roughly in order, from newest to oldest,
+but not perfectly in order due to how the posts are arranged on websta.
