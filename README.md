@@ -1,5 +1,5 @@
-Instagram Downloader - downloads all images/video from an Instagram profile.
-Provide the instagram username or profile url as an argument.
+Multiprocessed (wow!) Instagram Downloader - downloads all images/video from an
+Instagram profile through Websta. Fast!!
 
 
 Example usage:

@@ -12,7 +12,7 @@ os.nice(20)				# Make this process lowest priority
 
 # Macros of sorts
 workers = 30			# Size of the process pool used to download files
-max_queue = 1000		# The maximum number of links to process at once.
+max_queue = 500		# The maximum number of links to process at once.
 max_dls = 999999		# Program terminates after downloading this many items
 
 # url and path related stuff
