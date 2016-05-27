@@ -1,37 +1,43 @@
-from bs4 import BeautifulSoup as bs
+#!/usr/bin/python
+
+# todo: Gather up each page of images first instead of finding all of the
+# images/videos from a single page between moving from page to page.
+
+import sys
+import os
+import re
 from multiprocessing import Pool
 from urllib2 import urlopen
 from getopt import getopt
 import requests
-import sys
-import os
-import re
+from bs4 import BeautifulSoup as bs
 
 # --- Setup/declarations ---
-os.nice(20)				# Make this process lowest priority
+os.nice(20)	# Make this process lowest priority
 
 # Macros of sorts
-workers = 30			# Size of the process pool used to download files
-max_queue = 500		# The maximum number of links to process at once.
+workers = 30 # Size of the process pool used to download files
+max_queue = 100	# The maximum number of links to process at once.
 
 # url and path related stuff
-output_directory = ''	# Will be initialized with the optional argument or a
-						# default later.
-profile_username = ''	# The Instagram username of the profile from which we
-						# are downloading. Must be supplied.
+output_directory = '' # Will be initialized with the optional argument or a
+# default later.
+profile_username = '' # The Instagram username of the profile from which we
+# are downloading. Must be supplied.
 websta_url = 'https://websta.me/' # Websta homepage
 
 
 
 # --- Multiprocessing things ---
-links = [] 	# Queue for the links to the images/videos, needed by
-			# multiprocessing's map()
+links = [] # Queue for the links to the images/videos, needed by
+# multiprocessing's map()
+
 
 # Function that is used in multiprocessing's map(). Downloads the file at the
 # url and writes it to disk.
 def fetch_media(link):
-	file_name_match = file_name.search(link).group(0)
-	dl_path = output_directory + '/' + file_name_match
+	fname = file_name.search(link).group(0)
+	dl_path = output_directory + '/' + fname
 
 	response = urlopen(link)
 	with open(dl_path, 'wb') as out:
@@ -122,7 +128,12 @@ while profile_source:
 			# If the file already exists from a past scrape, then skip it.
 			file_name_match = file_name.search(video_tag['href'])
 			dl_path = output_directory + '/' + file_name_match.group(0)
-			if os.path.exists(dl_path): continue
+
+			# # DEBUG
+			# print dl_path
+
+			if os.path.exists(dl_path):
+				continue
 
 			# Otherwise, get the video source url and download it.
 			file_url_match = file_url.search(video_tag['href']).group(0)
@@ -144,7 +155,12 @@ while profile_source:
 			# If the file already exists from a past scrape, then skip it.
 			file_name_match = file_name.search(image_tag['style'])
 			dl_path = output_directory + '/' + file_name_match.group(0)
-			if os.path.exists(dl_path): continue
+
+			# # DEBUG
+			# print dl_path
+			
+			if os.path.exists(dl_path):
+				continue
 
 			# Otherwise, get the image source url and download it.
 			file_url_match = file_url.search(image_tag['style'])
