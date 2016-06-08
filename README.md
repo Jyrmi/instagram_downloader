@@ -1,5 +1,6 @@
-# Selenium browser-driven Instagram downloader (need FireFox installed)
-======
+# Instagram downloader (need FireFox installed)
+
+### Uses Selenium WebDriver to load content on an Instagram profile
 
 Example usage:
 
@@ -11,11 +12,11 @@ or
 
 Optional arguments:
 
-⋅⋅*--dest
+⋅⋅* --dest
 
-⋅⋅*--update
+⋅⋅* --update
 
-⋅⋅*--serialize
+⋅⋅* --serialize
 
 You may optionally specify the directory to download to:
 
@@ -23,7 +24,7 @@ You may optionally specify the directory to download to:
 
 or
 
-*python bin/run.py --dest ~/Desktop/instagram_images pythonpaige*
+**python bin/run.py --dest ~/Desktop/instagram_images pythonpaige**
 
 You may also optionally indicate whether to run the downloader in update mode so that it terminates once reaching an already existing file:
 
