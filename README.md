@@ -30,7 +30,7 @@ You may also optionally indicate whether to run the downloader in update mode so
 
 **python bin/run.py --update pythonpaige**
 
-This is useful if a profile has had a few new posts since last updating, and you just want to fetch the new ones.
+This is useful if a profile has had a few new posts since last downloading, and you just want to fetch the new ones.
 
 You may also optionally indicate whether to serialize the downloaded files. Without the option, file names will be their original web ID's, e.g.
 
@@ -54,4 +54,4 @@ will result in file names being followed by their number, i.e.
 
 where the earliest posted image is number (1).
 
-###### A simple Tkinter GUI has been added with the intention of packaging the downloader for Windows. If using the GUI, it should be run in the same directory as *run.py* with **python gui.py**.
+###### A simple Tkinter GUI has been added with the intention of packaging the downloader for Windows. If using the GUI, it should be run in the same directory as *run.py* with "python gui.py".
