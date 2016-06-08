@@ -12,11 +12,11 @@ or
 
 Optional arguments:
 
-*--dest
+* --dest
 
-*--update
+* --update
 
-*--serialize
+* --serialize
 
 You may optionally specify the directory to download to:
 
