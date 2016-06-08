@@ -34,11 +34,11 @@ This is useful if a profile has had a few new posts since last updating, and you
 
 You may also optionally indicate whether to serialize the downloaded files. Without the option, file names will be their original web ID's, e.g.
 
-11142783_1577741432494889_787295718_n.jpg
+*11142783_1577741432494889_787295718_n.jpg*
 
-11189805_917626121591623_583183794_n.jpg
+*11189805_917626121591623_583183794_n.jpg*
 
-11184547_1414354925550367_274565051_n.jpg
+*11184547_1414354925550367_274565051_n.jpg*
 
 etc., but running
 
@@ -46,11 +46,11 @@ etc., but running
 
 will result in file names being followed by their number, i.e.
 
-(1) 11142783_1577741432494889_787295718_n.jpg
+*(1) 11142783_1577741432494889_787295718_n.jpg*
 
-(2) 11189805_917626121591623_583183794_n.jpg
+*(2) 11189805_917626121591623_583183794_n.jpg*
 
-(3) 11184547_1414354925550367_274565051_n.jpg
+*(3) 11184547_1414354925550367_274565051_n.jpg*
 
 where the earliest posted image is number (1).
 
