@@ -1,189 +1,230 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+"""
+Browser-run version of instagram_downloader.
+"""
 
-# todo: Gather up each page of images first instead of finding all of the
-# images/videos from a single page between moving from page to page.
-
-import sys
 import os
+import sys
 import re
-from multiprocessing import Pool
+import itertools
 from urllib2 import urlopen
 from getopt import getopt
-import requests
-from bs4 import BeautifulSoup as bs
-
-# --- Setup/declarations ---
-os.nice(20)	# Make this process lowest priority
-
-# Macros of sorts
-workers = 30 # Size of the process pool used to download files
-max_queue = 100	# The maximum number of links to process at once.
+from time import sleep
+from bs4 import BeautifulSoup
+from selenium.webdriver import Firefox # pip install selenium
+# from selenium.webdriver.common.keys import Keys
 
 # url and path related stuff
-output_directory = '' # Will be initialized with the optional argument or a
-# default later.
-profile_username = '' # The Instagram username of the profile from which we
-# are downloading. Must be supplied.
-websta_url = 'https://websta.me/' # Websta homepage
-
-
-
-# --- Multiprocessing things ---
-links = [] # Queue for the links to the images/videos, needed by
-# multiprocessing's map()
-
-
-# Function that is used in multiprocessing's map(). Downloads the file at the
-# url and writes it to disk.
-def fetch_media(link):
-	fname = file_name.search(link).group(0)
-	dl_path = output_directory + '/' + fname
-
-	response = urlopen(link)
-	with open(dl_path, 'wb') as out:
-		out.write(response.read())
-
-		# DEBUG
-		print dl_path
-
-
-
-# --- Argument Parsing ---
-opts, args = getopt(sys.argv[1:], '', ['dest='])
-
-# Expecting only one argument that isn't an option, which is the Instagram
-# username or profile url. We only want the username for our purposes so strip
-# off anything in a url that isn't a part of the username.
-for argument in args:
-	if 'www.instagram.com/' in argument:
-		argument = argument.rstrip('\n/')
-		profile_username = argument[argument.rfind('/')+1:]
-	else:
-		profile_username = argument.rstrip('\n/')
-
-# Optional arguments
-# --dest	an optional destination directory for the downloads. Defaults to
-#			a directory of the same name as the target Instagram username in
-#			the current directory.
-# --max		an optional limit to the number of images/videos to download.
-#			Defaults to 999,999.
-for option, option_argument in opts:
-	if option == '--dest':
-		output_directory = option_argument
-		if not os.path.exists(output_directory):
-			os.makedirs(output_directory)
-
-# If the output directory doesn't exist, create it.
-if not output_directory:
-	output_directory = profile_username
-	if not os.path.exists(profile_username):
-		os.makedirs(profile_username)
-
-
+insta_url = 'https://www.instagram.com/'
 
 # --- Pattern definitions ---
-# - the links we need are often tucked away in the javascript of the html doc.
-
-# - resize: websta displays a smaller version of all Instagram images, which
-#	I'm guessing Instagram created created for other purposes. There's
-#	consistently some extra stuff included in the middle of the original image
-#	url to reference the smaller versions, like s640x640/sh0.08/ or the like.
-#	We can just sub that stuff out and end up with the url to the og image.
-resize = re.compile(r'[^/]+\d+x\d+/(sh\d+\.\d+/)?')
-
-# - file_url: gets the url of the media item. Just looking for something that
-#	starts with http and ends with jpg or mp4. Usually this link is embedded
-#	within a bunch of surrounding javascript, so we want to cut that stuff
-#	away.
-file_url = re.compile(r'https?://[a-zA-Z0-9\./_-]+(jpg|mp4)')
-
 # - file_name: usually a sequence of numbers, underscores, a few letters, and
-#	an extension. This pattern should match with the file name from the file's
-#	url.
+#   an extension. This pattern should match with the file name from the file's
+#   url.
 file_name = re.compile(r'[a-zA-Z0-9_-]+\.(jpg|mp4)')
 
+# - resize: websta displays a smaller version of all Instagram images, which
+#   I'm guessing Instagram created created for other purposes. There's
+#   consistently some extra stuff included in the middle of the original image
+#   url to reference the smaller versions, like s640x640/sh0.08/ or the like.
+#   We can just sub that stuff out and end up with the url to the og image.
+resize = re.compile(r'[^/]+\d+x\d+/(sh\d+\.\d+/)?')
+
+def delete_item(driver, n_times):
+    """
+    Deletes the first media item that appears on the profile.
+    """
+    # print 'deleting %d item(s)' % n_times
+
+    for _ in itertools.repeat(None, n_times):
+        script_find_item = "var aa=document.getElementsByClassName('_8mlbc _vbtk2 _t5r8b')[0];"
+        script_delete_item = "aa.parentNode.removeChild(aa)"
+        driver.execute_script(script_find_item + script_delete_item)
+
+# def delete_row(driver, n_times):
+#     """
+#     Deletes the top row (three items) on the profile.
+#     """
+#     print 'deleting %d row(s)' % n_times
+#     delete_item(driver, n_times * 3)
+
+def delete_row(driver, n_times):
+    """
+    Deletes the top row (three items) on the profile.
+    """
+    print 'deleting %d row(s)' % n_times
+
+    for _ in itertools.repeat(None, n_times):
+        script_find_row = "var aa=document.getElementsByClassName('_myci9')[0];"
+        script_delete_row = "aa.parentNode.removeChild(aa)"
+        driver.execute_script(script_find_row + script_delete_row)
+
+def download_and_delete_row(driver, n_times, output_directory):
+    """
+    Deletes the top row (three items) on the profile.
+    """
+    # print 'dl\'ing & deleting %d row(s)' % n_times
+
+    images = driver.find_elements_by_tag_name('img')
+    for i in xrange(n_times * 3):
+        link = resize.sub('', images[i].get_attribute('src'))
+        fname = file_name.search(link).group(0)
+        dl_path = output_directory + '/' + fname
+
+        response = urlopen(link)
+        with open(dl_path, 'wb') as out:
+            out.write(response.read())
+
+            # DEBUG
+            print dl_path
 
 
-# --- Main Loop ---
-process_pool = Pool(workers)
+    for _ in itertools.repeat(None, n_times):
+        script_find_row = "var aa=document.getElementsByClassName('_myci9')[0];"
+        script_delete_row = "aa.parentNode.removeChild(aa)"
+        driver.execute_script(script_find_row + script_delete_row)
 
-# Start with the Websta profile's first page.
-profile_source = requests.get(websta_url + 'n/' + profile_username)
-while profile_source:
-	profile_soup = bs(profile_source.content, 'lxml')
+def count_items(driver):
+    """
+    Counts the number of media items that appears on the profile.
+    """
+    items = driver.find_elements_by_class_name('_22yr2')
+    count = len(items)
 
-	# Each individual image/video is contained within a div of this class.
-	media_wrappers = profile_soup.find_all('div', {'class': 'mainimg_wrapper'})
-	for wrapper in media_wrappers:
+    # print '%d photos/images on page currently' % count
 
-		# Video case
-		# The video url is contained within an 'a' tag of an arcane class that
-		# I don't think I should risk checking for exactly. All I know is that
-		# class="mainimg" indicates an image, not a video, so check for
-		# anything but.
-		video_tag = wrapper.find(lambda tag: tag.name == 'a'
-			and tag['class'] and 'mainimg' not in tag['class'])
-		if video_tag and video_tag['href'].endswith('.mp4'): # Ensuring video
+    return count
 
-			# If the file already exists from a past scrape, then skip it.
-			file_name_match = file_name.search(video_tag['href'])
-			dl_path = output_directory + '/' + file_name_match.group(0)
+def print_tags(driver):
+    """
+	Prints all the media item tags on the current page.
+	"""
+    media_links = []
 
-			# # DEBUG
-			# print dl_path
+    media_tags = driver.find_elements_by_class_name('_icyx7')
+    for media_item in media_tags:
+        link = media_item.get_attribute('src')
+        media_links.append(link)
+    print media_links
+    print len(media_tags), 'items'
 
-			if os.path.exists(dl_path):
-				continue
+def main():
+    """
+    Main loop of the scrape.
+    """
 
-			# Otherwise, get the video source url and download it.
-			file_url_match = file_url.search(video_tag['href']).group(0)
+    profile_username = '' # The Instagram username of the profile from which we
+    # are downloading. Must be supplied.
+    output_directory = '' # Will be initialized with the optional argument or a
+    # default later.
+    
+    # --- Argument Parsing ---
+    opts, args = getopt(sys.argv[1:], '', ['dest='])
 
-			# Append to the list and leave the rest to the workers.
-			links.append(file_url_match)
+    # Expecting only one argument that isn't an option, which is the Instagram
+    # username or profile url. We only want the username for our purposes so strip
+    # off anything in a url that isn't a part of the username.
+    for argument in args:
+        if 'www.instagram.com/' in argument:
+            argument = argument.rstrip('\n/')
+            profile_username = argument[argument.rfind('/')+1:]
+        else:
+            profile_username = argument.rstrip('\n/')
 
-			continue # There's also an image along with every video just
-			# showing a still frame of the video. We don't need this, but the
-			# next block of code would catch it, so continue past it.
+    # Optional arguments
+    # --dest    an optional destination directory for the downloads. Defaults to
+    #           a directory of the same name as the target Instagram username in
+    #           the current directory.
+    for option, option_argument in opts:
+        if option == '--dest':
+            output_directory = option_argument
+            if not os.path.exists(output_directory):
+                os.makedirs(output_directory)
 
-		# If we've reached this point, no video link was found, so an image is
-		# guaranteed.
+    # If the output directory doesn't exist, create it.
+    if not output_directory:
+        output_directory = profile_username
+        if not os.path.exists(profile_username):
+            os.makedirs(profile_username)
 
-		# Image case
-		image_tag = wrapper.find('div', {'class': 'img-cover'})
-		if image_tag and image_tag.has_attr('style'):
+    print profile_username, output_directory
 
-			# If the file already exists from a past scrape, then skip it.
-			file_name_match = file_name.search(image_tag['style'])
-			dl_path = output_directory + '/' + file_name_match.group(0)
+    # max_queue = 30 # maximum number of items in queue before emptying
+    loaded = 0
+    processed = 0
 
-			# # DEBUG
-			# print dl_path
-			
-			if os.path.exists(dl_path):
-				continue
+    driver = Firefox()
+    driver.get(insta_url + profile_username)
 
-			# Otherwise, get the image source url and download it.
-			file_url_match = file_url.search(image_tag['style'])
+    # Find the number of posts on this Instagram profile
+    profile_soup = BeautifulSoup(driver.page_source, 'lxml')
+    post_count_tag = profile_soup.find('span', {'class': '_e8fkl'})
+    post_count = int(post_count_tag.text.replace(',', ''))
 
-			# Here we are removing the extra stuff in the url that makes this
-			# link reference a smaller, inferior version of the image. Sub it
-			# out.
-			file_url_match = resize.sub('', file_url_match.group(0))
+    # Zoom right out
+    # html = driver.find_element_by_tag_name("html")
+    # html.send_keys(Keys.CONTROL, Keys.SUBTRACT)
+    # html.send_keys(Keys.CONTROL, Keys.SUBTRACT)
+    # html.send_keys(Keys.CONTROL, Keys.SUBTRACT)
+    # html.send_keys(Keys.CONTROL, Keys.SUBTRACT)
+    # html.send_keys(Keys.CONTROL, Keys.SUBTRACT)
+    # html.send_keys(Keys.CONTROL, Keys.SUBTRACT)
+    # html.send_keys(Keys.CONTROL, Keys.SUBTRACT)
 
-			# Append to the list and leave the rest to the workers.
-			links.append(file_url_match)
+    # Click the 'Load More' element
+    driver.find_elements_by_class_name('_oidfu')[0].click()
+    driver.execute_script("window.scrollTo(0, -1000000);")
+    # loaded = 24
 
-	# Set up the next page of items.
-	# Keep clicking "Earlier" to browse further back in time until there's no
-	# more content. The 'earlier' button is represented by the 'pager' list in
-	# the html document.
-	next_page_tag = profile_soup.find('ul', {'class': 'pager'})
-	next_page_link = next_page_tag.find('a', href=True) # find the link within
-	if next_page_link:
-		profile_source = requests.get(websta_url + next_page_link['href'])
-	else: profile_source = None # This will exit the while loop next iteration
+    # Load all the posts into the browser
+    while loaded < post_count:
 
-	# Start the processes once the queue is full or there is no more content.
-	if len(links) >= max_queue or not profile_source:
-		process_pool.map(fetch_media, links)
-		links = []
+        # print 'processed %d' % processed
+
+        # driver.execute_script("window.scrollTo(0, 1000000);")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        sleep(.1)
+        driver.execute_script("window.scrollTo(0, 0);")
+        sleep(1)
+
+        while count_items(driver) > 24 or post_count - processed < 24:
+        # while count_items(driver) >= 24:
+            download_and_delete_row(driver, 4, output_directory)
+            # try:
+            #     # delete_row(driver, 4)
+            #     download_and_delete_row(driver, 4)
+            # except:
+            #     break
+
+            processed += 12
+
+        # print 'loaded', loaded, '\tprocessed', processed
+
+        # if loaded - processed >= max_queue or loaded >= post_count:
+
+        #     # print_tags(driver)
+        #     print 'EMPTYING QUEUE'
+
+        #     # Repeats <loaded> times
+        #     for _ in itertools.repeat(None, (loaded-processed)/3):
+        #         delete_row(driver)
+        #         processed += 3
+
+
+        # Load more content by scrolling to the bottom of the page
+        # last_position = driver.execute_script('return window.scrollY;')
+
+        # driver.execute_script("window.scrollTo(0, 1000000);")
+        # sleep(1.5)
+
+        # new_position = driver.execute_script('return window.scrollY;')
+        # print last_position, '>', new_position
+
+        # If the browser successfully loaded more content, count it
+        # if last_position != new_position:
+        #     loaded += 12
+
+    driver.close()
+
+if __name__ == "__main__":
+    main()
