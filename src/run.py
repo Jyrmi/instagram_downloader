@@ -73,7 +73,6 @@ def delete_row(driver):
     try:
         driver.execute_script(find_row + remove_row)
     except:
-        print 'exception: no more images'
         exit(0)
 
 
@@ -90,13 +89,13 @@ def main():
     """
     Main loop of the scrape.
     """
-
     profile_username = '' # The Instagram username of the profile from which we
     # are downloading. Must be supplied.
     output_directory = '' # Will be initialized with the optional argument or a
     # default later.
     update_mode = False
     serialize = False
+    latest_image = ''
 
     # --- Argument Parsing ---
     opts, args = getopt(sys.argv[1:], '', ['dest=', 'update', 'serialize'])
@@ -131,6 +130,11 @@ def main():
         if not os.path.exists(profile_username):
             os.makedirs(profile_username)
 
+    # The latest downloaded images will be the first in the directory.
+    files = os.listdir(output_directory)
+    if files:
+        latest_image = files[0]
+
     # Start the browser
     driver = Firefox()
     driver.get(insta_url + profile_username)
@@ -140,7 +144,7 @@ def main():
     post_count = int(post_count_tag.text)
 
     # Click the 'Load More' element
-    driver.find_elements_by_class_name('_oidfu')[0].click()
+    driver.find_element_by_class_name('_oidfu').click()
 
     # Load all the posts into the browser
     processed = 0
@@ -153,11 +157,20 @@ def main():
         # remove them from view
         for _ in itertools.repeat(None, 4):
             urls = fetch_row_links(driver)
-            for url in urls:
-                download_from_url(url, output_directory,
-                                  True, post_count-processed)
-                processed += 1
             delete_row(driver)
+            for url in urls:
+
+                # Exit if we've reached the latest image that was in the
+                # directory before downloading. This means the directory has
+                # everything beyond this point.
+                if update_mode:
+                    fname = file_name.search(url).group(0)
+                    if fname in latest_image:
+                        exit(0)
+
+                download_from_url(url, output_directory,
+                                  serialize, post_count-processed)
+                processed += 1
 
     driver.close()
 
