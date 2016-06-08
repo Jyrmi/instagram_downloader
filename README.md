@@ -26,9 +26,11 @@ or
 
 **python bin/run.py --dest ~/Desktop/instagram_images pythonpaige**
 
-You may also optionally indicate whether to run the downloader in update mode so that it terminates once reaching an already existing file:
+You may also optionally indicate whether to run the downloader in update mode so that it automatically terminates once reaching an already existing file:
 
 **python bin/run.py --update pythonpaige**
+
+This is useful if a profile has had a few new posts since last updating, and you just want to fetch the new ones.
 
 You may also optionally indicate whether to serialize the downloaded files. Without the option, file names will be their original web ID's, e.g.
 
