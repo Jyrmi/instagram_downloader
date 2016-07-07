@@ -1,4 +1,6 @@
-# Instagram downloader (need FireFox installed)
+# Instagram downloader (need chromedriver installed)
+
+### Get the latest release of chromedriver from https://sites.google.com/a/chromium.org/chromedriver/downloads and put it in the "bin" directory
 
 #### Uses Selenium WebDriver to load content on an Instagram profile
 
@@ -52,6 +54,6 @@ will result in file names being followed by their number, i.e.
 
 *(3) 11184547_1414354925550367_274565051_n.jpg*
 
-where the earliest posted image is number (1).
+where the oldest posted image is number (1).
 
 ###### A simple Tkinter GUI has been added with the intention of packaging the downloader for Windows. If using the GUI, it should be run in the same directory as *run.py* with "python gui.py".

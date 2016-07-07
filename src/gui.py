@@ -11,45 +11,48 @@ from Tkinter import N, S, E, W
 import tkFileDialog
 
 def select_directory_callback():
-	download_directory = tkFileDialog.askdirectory()
-	if download_directory:
-		E_path_text.set(download_directory)
+    download_directory = tkFileDialog.askdirectory()
+    if download_directory:
+        E_path_text.set(download_directory)
 
 def set_default_directory():
-	E_path_text.set(os.getcwd()+'/'+E_username.get())
-	def cancel(event):
-		top.after_cancel(path_update_id)
-	B_path_select.bind("<Button-1>", cancel)
-	E_path.bind("<Button-1>", cancel)
-	path_update_id = top.after(100, set_default_directory)
+    E_path_text.set(os.getcwd()+'/'+E_username.get())
+    def cancel(event):
+        top.after_cancel(path_update_id)
+    B_path_select.bind("<Button-1>", cancel)
+    E_path.bind("<Button-1>", cancel)
+    path_update_id = top.after(100, set_default_directory)
 
 def start_callback():
-	count = 0
+    count = 0
 
-	command = ' '.join(['python', os.getcwd()+'/run.py', '--dest',
-		E_path.get(), E_username.get()])
-	proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    command = ' '.join(['python', os.getcwd()+'/run.py', '--dest',
+        E_path.get(), E_username.get()])
 
-	# # Monitor the subprocess' stdout and count the files downloaded
-	# queue = Queue()
-	# thread = Thread(target=start_callback)
-	# thread.start()
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 
-	# while proc.poll() is None:
-	# 	queue.put(proc.stdout.readline())
+    print command
 
-	# def update_lines():
-	# 	try:
-	# 		line = queue.get(False)
-	# 		L_downloads = Label(top, text=str(randint(0, 9)))
-	# 		L_downloads.grid(row=2, column=1)
-	# 	except Empty:
-	# 		pass
+    # # Monitor the subprocess' stdout and count the files downloaded
+    # queue = Queue()
+    # thread = Thread(target=start_callback)
+    # thread.start()
 
-	# 	if proc.poll() is None:
-	# 		top.after(100, update_lines)
+    # while proc.poll() is None:
+    #     queue.put(proc.stdout.readline())
 
-	# top.after(100, update_lines)
+    # def update_lines():
+    #     try:
+    #         line = queue.get(False)
+    #         L_downloads = Label(top, text=str(randint(0, 9)))
+    #         L_downloads.grid(row=2, column=1)
+    #     except Empty:
+    #         pass
+
+    #     if proc.poll() is None:
+    #         top.after(100, update_lines)
+
+    # top.after(100, update_lines)
 
 
 top = Tk()
