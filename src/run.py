@@ -6,8 +6,8 @@ Browser-run version of instagram_downloader.
 import os
 import sys
 import re
-from time import sleep
 import itertools
+from time import sleep
 from urllib2 import urlopen
 from getopt import getopt
 from selenium.webdriver import Chrome # pip install selenium
@@ -136,29 +136,27 @@ def main():
         latest_image = files[0]
 
     # Start the browser
-    # chrome_options = ChromeOptions()
-    # chrome_options.add_argument("user-data-dir=/home/jeremy/.config/chromium/default")
-    # driver = Chrome(executable_path='../bin/chromedriver',
-    #     chrome_options=chrome_options)
     driver = Chrome(executable_path='../bin/chromedriver')
     driver.get(insta_url + profile_username)
 
     # Find the number of posts on this Instagram profile
-    post_count_tag_xpath = '//*[@id="react-root"]/section/main/article/header/div[2]/ul/li[1]/span/span'
+    post_count_tag_xpath = ('//*[@id="react-root"]/section/main/'
+                            + 'article/header/div[2]/ul/li[1]/span/span')
     post_count_tag = driver.find_element_by_xpath(post_count_tag_xpath)
     post_count = int(post_count_tag.text)
 
-    # If the profile is private, then redirect to the login page
+    # If the target profile is private, then redirect to the login page
     login_tag_xpath = '//*[@id="react-root"]/section/main/article/div/p/a'
     login_tag = driver.find_element_by_xpath(login_tag_xpath)
     if login_tag:
-        login_page_url =  login_tag.get_attribute('href')
+        login_page_url = login_tag.get_attribute('href')
         driver.get(login_page_url)
 
         # Wait for the user to login
         while driver.current_url == login_page_url:
             sleep(1)
 
+        # Return to the target profile from the homepage
         driver.get(insta_url + profile_username)
 
     # Click the 'Load More' element
