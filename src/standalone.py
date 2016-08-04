@@ -1,9 +1,15 @@
-#!/usr/bin/env python
-"""
-Browser-run version of instagram_downloader.
-"""
+#!/usr/bin/python
 
 import os
+import subprocess
+from Tkinter import Tk
+from Tkinter import Label
+from Tkinter import Entry
+from Tkinter import Button
+from Tkinter import StringVar
+from Tkinter import N, S, E, W
+import tkFileDialog
+
 import sys
 import re
 import itertools
@@ -84,51 +90,36 @@ def count_items(driver):
 
     return len(items)
 
+def select_directory_callback():
+    download_directory = tkFileDialog.askdirectory()
+    if download_directory:
+        E_path_text.set(download_directory)
 
-def main():
+def set_default_directory():
+    E_path_text.set(os.getcwd()+'/'+E_username.get())
+    def cancel(event):
+        top.after_cancel(path_update_id)
+    B_path_select.bind("<Button-1>", cancel)
+    E_path.bind("<Button-1>", cancel)
+    path_update_id = top.after(100, set_default_directory)
+
+def start_callback():
+
     """
     Main loop of the scrape.
     """
-    profile_username = '' # The Instagram username of the profile from which we
+    profile_username = E_username.get() # The Instagram username of the profile from which we
     # are downloading. Must be supplied.
-    output_directory = '' # Will be initialized with the optional argument or a
+    output_directory = E_path.get() # Will be initialized with the optional argument or a
     # default later.
-    update_mode = False
-    serialize = False
+    update_mode = True
+    serialize = True
     latest_image = ''
 
-    # --- Argument Parsing ---
-    opts, args = getopt(sys.argv[1:], '', ['dest=', 'update', 'serialize'])
-
-    # Expecting only one argument that isn't an option, which is the Instagram
-    # username or profile url. We only want the username for our purposes so strip
-    # off anything in a url that isn't a part of the username.
-    for argument in args:
-        if 'www.instagram.com/' in argument:
-            argument = argument.rstrip('\n/')
-            profile_username = argument[argument.rfind('/')+1:]
-        else:
-            profile_username = argument.rstrip('\n/')
-
-    # Optional arguments
-    # --dest    an optional destination directory for the downloads. Defaults to
-    #           a directory of the same name as the target Instagram username in
-    #           the current directory.
-    for option, option_argument in opts:
-        if option == '--dest':
-            output_directory = option_argument
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
-        elif option == '--update':
-            update_mode = True
-        elif option == '--serialize':
-            serialize = True
-
     # If the output directory doesn't exist, create it.
-    if not output_directory:
-        output_directory = profile_username
-        if not os.path.exists(profile_username):
-            os.makedirs(profile_username)
+    output_directory = profile_username
+    if not os.path.exists(profile_username):
+        os.makedirs(profile_username)
 
     # The latest downloaded images will be the first in the directory.
     files = os.listdir(output_directory)
@@ -192,5 +183,51 @@ def main():
 
     driver.close()
 
-if __name__ == "__main__":
-    main()
+
+top = Tk()
+top.title('Instagram Downloader')
+top.update_idletasks()
+
+
+# Username or url label and entry box
+L_username = Label(top, text="Username or url")
+L_username.grid(row=0, column=0, sticky=N+S+E+W)
+
+E_username_text = StringVar()
+E_username = Entry(top, bd=2, textvariable=E_username_text)
+E_username.grid(row=0, column=1, columnspan=2, sticky=N+S+E+W)
+
+
+# Download path label, file browser button, and download path entry box
+L_path = Label(top, text="Download path")
+L_path.grid(row=1, column=0, sticky=N+S+E+W)
+
+B_path_select = Button(top, text="...", command=select_directory_callback)
+B_path_select.grid(row=1, column=1, sticky=N+S+E+W)
+
+E_path_text = StringVar()
+E_path_text.set(os.getcwd()+'/')
+E_path = Entry(top, bd=2, textvariable=E_path_text)
+E_path.grid(row=1, column=2)
+
+
+# Start button
+# L_downloads = Label(top, text='Downloaded:')
+# L_downloads.grid(row=2, column=0)
+
+# L_downloads = Label(top, text='0')
+# L_downloads.grid(row=2, column=1)
+
+B_start = Button(top, text="Go", command=start_callback)
+# B_start.grid(row=2, column=2, sticky=N+S+E+W)
+B_start.grid(row=2, column=0, columnspan=3, sticky=N+S+E+W)
+
+
+# # Stdout from the run.py subprocess
+# T_stdout = Text(top)
+# T_stdout.grid(row=4, column=0, columnspan=3, sticky=N+S+E+W)
+
+
+# Main loop
+path_update_id = top.after(100, set_default_directory)
+top.mainloop()
