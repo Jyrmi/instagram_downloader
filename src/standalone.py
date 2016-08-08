@@ -116,11 +116,6 @@ def start_callback():
     serialize = True
     latest_image = ''
 
-    # If the output directory doesn't exist, create it.
-    output_directory = profile_username
-    if not os.path.exists(profile_username):
-        os.makedirs(profile_username)
-
     # The latest downloaded images will be the first in the directory.
     files = os.listdir(output_directory)
     if files:
@@ -134,7 +129,7 @@ def start_callback():
     post_count_tag_xpath = ('//*[@id="react-root"]/section/main/'
                             + 'article/header/div[2]/ul/li[1]/span/span')
     post_count_tag = driver.find_element_by_xpath(post_count_tag_xpath)
-    post_count = int(post_count_tag.text)
+    post_count = int(post_count_tag.text.replace(',', ''))
 
     # If the target profile is private, then redirect to the login page
     login_tag_xpath = '//*[@id="react-root"]/section/main/article/div/p/a'
